@@ -53,7 +53,7 @@ function useCustomerState() {
   return [state, actions];
 }
 
-const CustomerContext = createContext();
+export const CustomerContext = createContext();
 
 function WithCustomerState({ children }) {
   const [state, actions] = useCustomerState();
