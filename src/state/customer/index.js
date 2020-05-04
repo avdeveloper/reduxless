@@ -1,13 +1,9 @@
 import React, {
   createContext,
+  useEffect,
   useReducer,
 } from 'react';
 import axios from 'axios';
-
-const initialState = {
-  isLoading: false,
-  data: null,
-};
 
 const FETCH_CUSTOMER = 'glic-dtc/customer/FETCH_CUSTOMER';
 const FETCH_CUSTOMER_SUCCEEDED = 'glic-dtc/customer/FETCH_CUSTOMER_SUCCEEDED';
@@ -30,8 +26,15 @@ function customerReducer(state, action) {
   }
 }
 
+const initialState = {
+  isLoading: false,
+  data: null,
+};
+
+const localState = typeof window !== 'undefined' && JSON.parse(window.localStorage.getItem('customer'));
+
 function useCustomerState() {
-  const [state, dispatch] = useReducer(customerReducer, initialState);
+  const [state, dispatch] = useReducer(customerReducer, localState || initialState);
   const actions = {
     async fetchCustomer() {
       try {
@@ -57,6 +60,14 @@ export const CustomerContext = createContext();
 
 function WithCustomerState({ children }) {
   const [state, actions] = useCustomerState();
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('customer', JSON.stringify(state));
+    } catch(e) {
+      console.debug('Cannot persist state to localStorage', e);
+    }
+  }, [state]);
+
   return (
     <CustomerContext.Provider value={{state, actions}}>
       {children}
